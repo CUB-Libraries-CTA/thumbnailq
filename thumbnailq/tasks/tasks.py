@@ -45,9 +45,9 @@ def generateObjectThumbnail(bucket,key,width=100,height=100,target_base='/static
         pathlib.Path(os.path.join(target_base,hashpath)).mkdir(parents=True, exist_ok=True)
         object_content=genS3Objct(bucket,key)
         try:
-            imageThumbnail(object_content,thumb_filename)
+            imageThumbnail(object_content,thumb_filename,width,height)
         except:
-            imageThumbnail(object_content,thumb_filename,blob=False)
+            imageThumbnail(object_content,thumb_filename,width,height,blob=False)
         result={"key":key,"thumbnail":thumb_filename}
     except Exception as e:
         thumb_filename=os.path.join(target_base,hashpath,"thumbnail.png")
