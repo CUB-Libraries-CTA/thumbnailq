@@ -6,8 +6,6 @@ setup(name='thumbnailq',
       package_data={"thumbnailq": ['tasks/files/*.png', 'thumbnailq/tasks/files/*.png']},
       include_package_data=True,
       install_requires=[
-          'celery==3.1.22',
-          'pymongo==3.2.1',
           'Wand'
       ],
 )
