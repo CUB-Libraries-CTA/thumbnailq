@@ -48,6 +48,7 @@ def generateObjectThumbnail(bucket,key,width=100,height=100,target_base='/static
             imageThumbnail(object_content,thumb_filename,width,height)
         except:
             imageThumbnail(object_content,thumb_filename,width,height,blob=False)
+        object_content.close()
         result={"key":key,"thumbnail":thumb_filename}
     except Exception as e:
         thumb_filename=os.path.join(target_base,hashpath,"thumbnail.png")
