@@ -33,10 +33,10 @@ def genS3Objct(bucket,key):
     return object_content
 
 @task()
-def generateObjectThumbnail(bucket,key,width=100,height=100,target_base='/static_secure'):
+def generateObjectThumbnail(bucket,key,width=100,height=100,target_base='/static_secure/thumbnails'):
     """
     Taskname: generateObjectThumbnail
-    args/kwargs:bucket,width=100,height=100,target_base='/static_secure'
+    args/kwargs:bucket,width=100,height=100,target_base='/static_secure/thumbnails'
     """
     try:   
         hashkey="{0}/{1}".format(bucket,key)
@@ -60,10 +60,10 @@ def generateObjectThumbnail(bucket,key,width=100,height=100,target_base='/static
     return result
 
 @task()
-def generateBucketThumbnail(bucket,width=100,height=100,target_base='/static_secure'):
+def generateBucketThumbnail(bucket,width=100,height=100,target_base='/static_secure/thumbnails'):
     """
     Taskname: generateBucketThumbnail
-    args/kwargs:bucket,width=100,height=100,target_base='/static_secure'
+    args/kwargs:bucket,width=100,height=100,target_base='/static_secure/thumbnails'
     """
     s3 = boto3.resource('s3')
     my_bucket = s3.Bucket(bucket)
