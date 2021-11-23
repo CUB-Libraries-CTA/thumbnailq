@@ -11,7 +11,9 @@ def imageThumbnail(bucket,key,target_fname,width=100,height=100,blob=True):
         object_content=genS3Objct(bucket,key)
         with IG.open(object_content) as img:
             img.thumbnail((width,height))
+            print("1save")
             img.save(target_fname)
+            print("1saveComplete")
     except:
         try:
             object_content=genS3Objct(bucket,key)
@@ -20,7 +22,10 @@ def imageThumbnail(bucket,key,target_fname,width=100,height=100,blob=True):
                 img.alpha_channel = 'remove'
                 img.background_color = Color('white')
                 img.thumbnail(width,height)
+                print("2save")
                 img.save(filename=target_fname)
+                print("2saveComplete")
+                
 
         except:
             tmpfile= "{0}/file.try".format(tempfile.gettempdir())
@@ -32,7 +37,9 @@ def imageThumbnail(bucket,key,target_fname,width=100,height=100,blob=True):
                 img.background_color = Color('white')
                 #img.transform(resize='320x240>')
                 img.thumbnail(width,height)
+                print("3save")
                 img.save(filename=target_fname)
+                print("3saveComplete")
     return target_fname
 
 def genHash(key,split=7):
@@ -70,6 +77,7 @@ def generateObjectThumbnail(bucket,key,width=100,height=100,target_base='/static
         src_default=os.path.join(pathlib.Path(__file__).parent.resolve(),"files/default-thumbnail.png")
         pathlib.Path(os.path.join(target_base,hashpath)).mkdir(parents=True, exist_ok=True)
         copyfile(src_default,thumb_filename)
+        print("4saveComplete")
         result={"key":key,"thumbnail":thumb_filename}
         pass
     return result
