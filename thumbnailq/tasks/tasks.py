@@ -29,7 +29,9 @@ def genHash(key,split=7):
 def genS3Objct(bucket,key):
     s3_client = boto3.client('s3')
     s3_response_object = s3_client.get_object(Bucket=bucket, Key=key)
+    print(dir(s3_response_object))
     object_content = s3_response_object['Body'].read()
+    s3_response_object.clear()
     return object_content
 
 @task()
@@ -48,7 +50,7 @@ def generateObjectThumbnail(bucket,key,width=100,height=100,target_base='/static
             imageThumbnail(object_content,thumb_filename,width,height)
         except:
             imageThumbnail(object_content,thumb_filename,width,height,blob=False)
-        object_content.close()
+        object_content=None
         result={"key":key,"thumbnail":thumb_filename}
     except Exception as e:
         thumb_filename=os.path.join(target_base,hashpath,"thumbnail.png")
