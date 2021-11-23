@@ -6,22 +6,33 @@ from shutil import copyfile
 import hashlib, textwrap, boto3, os,pathlib,tempfile
 from PIL import Image as IG
 
-def imageThumbnail(object_content,target_fname,width=100,height=100,blob=True):
+def imageThumbnail(bucket,key,target_fname,width=100,height=100,blob=True):
     try:
+        object_content=genS3Objct(bucket,key)
         with IG.open(object_content) as img:
             img.thumbnail((width,height))
             img.save(target_fname)
     except:
-        tmpfile= "{0}/file.try".format(tempfile.gettempdir())
-        with open(tmpfile,'wb') as f:
-            f.write(object_content.read())
-        with Image(filename="{0}[0]".format(tmpfile)) as img:
-            img.format = 'png'
-            img.alpha_channel = 'remove'
-            img.background_color = Color('white')
-            #img.transform(resize='320x240>')
-            img.thumbnail(width,height)
-            img.save(filename=target_fname)
+        try:
+            object_content=genS3Objct(bucket,key)
+            with Image(blob=object_content.read()) as img:
+                img.format = 'png'
+                img.alpha_channel = 'remove'
+                img.background_color = Color('white')
+                img.thumbnail(width,height)
+                img.save(filename=target_fname)
+
+        except:
+            tmpfile= "{0}/file.try".format(tempfile.gettempdir())
+            with open(tmpfile,'wb') as f:
+                f.write(object_content.read())
+            with Image(filename="{0}[0]".format(tmpfile)) as img:
+                img.format = 'png'
+                img.alpha_channel = 'remove'
+                img.background_color = Color('white')
+                #img.transform(resize='320x240>')
+                img.thumbnail(width,height)
+                img.save(filename=target_fname)
     return target_fname
 
 def genHash(key,split=7):
@@ -46,9 +57,9 @@ def generateObjectThumbnail(bucket,key,width=100,height=100,target_base='/static
         hashpath=genHash(hashkey)
         thumb_filename=os.path.join(target_base,hashpath,"thumbnail.png")
         pathlib.Path(os.path.join(target_base,hashpath)).mkdir(parents=True, exist_ok=True)
-        object_content=genS3Objct(bucket,key)
+        #object_content=genS3Objct(bucket,key)
         #try:
-        imageThumbnail(object_content,thumb_filename,width,height)
+        imageThumbnail(bucket,key,thumb_filename,width,height)
         #except:
         #    imageThumbnail(object_content,thumb_filename,width,height,blob=False)
         object_content=None
