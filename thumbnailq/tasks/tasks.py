@@ -4,19 +4,17 @@ from wand.color import Color
 from boto3 import client
 from shutil import copyfile
 import hashlib, textwrap, boto3, os,pathlib,tempfile
+from PIL import Image as IG
 
 def imageThumbnail(object_content,target_fname,width=100,height=100,blob=True):
-    if blob:
-        with Image(blob=object_content) as img:
-            img.format = 'png'
-            img.alpha_channel = 'remove'
-            img.background_color = Color('white')
-            img.thumbnail(width,height)
-            img.save(filename=target_fname)
-    else:
+    try:
+        with IG.open(object_content) as img:
+            img.thumbnail((width,height))
+            img.save(target_fname)
+    except:
         tmpfile= "{0}/file.try".format(tempfile.gettempdir())
         with open(tmpfile,'wb') as f:
-            f.write(object_content)
+            f.write(object_content.read())
         with Image(filename="{0}[0]".format(tmpfile)) as img:
             img.format = 'png'
             img.alpha_channel = 'remove'
@@ -34,10 +32,9 @@ def genHash(key,split=7):
 def genS3Objct(bucket,key):
     s3_client = boto3.client('s3')
     s3_response_object = s3_client.get_object(Bucket=bucket, Key=key)
-    object_content = s3_response_object['Body'].read()
-    s3_response_object.clear()
-    return object_content
-
+    #object_content = s3_response_object['Body'].read()
+    return s3_response_object['Body']
+2018
 @task()
 def generateObjectThumbnail(bucket,key,width=100,height=100,target_base='/static_secure/thumbnails'):
     """
@@ -50,10 +47,10 @@ def generateObjectThumbnail(bucket,key,width=100,height=100,target_base='/static
         thumb_filename=os.path.join(target_base,hashpath,"thumbnail.png")
         pathlib.Path(os.path.join(target_base,hashpath)).mkdir(parents=True, exist_ok=True)
         object_content=genS3Objct(bucket,key)
-        try:
-            imageThumbnail(object_content,thumb_filename,width,height)
-        except:
-            imageThumbnail(object_content,thumb_filename,width,height,blob=False)
+        #try:
+        imageThumbnail(object_content,thumb_filename,width,height)
+        #except:
+        #    imageThumbnail(object_content,thumb_filename,width,height,blob=False)
         object_content=None
         result={"key":key,"thumbnail":thumb_filename}
     except Exception as e:
