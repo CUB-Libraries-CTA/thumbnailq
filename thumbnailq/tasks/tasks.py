@@ -12,11 +12,28 @@ def imageThumbnail(bucket,key,target_fname,width=100,height=100,blob=True):
         IG.MAX_IMAGE_PIXELS = None
         with IG.open(object_content) as img:
             img.thumbnail((width,height))
-            print("1save")
+            #print("1save")
             img.save(target_fname)
             print("1saveComplete")
-    except:
+        return target_fname
+    except Exception as e:
+        print("1save: ",str(e))
+        pass
+    try:
+        object_content=genS3Objct(bucket,key)
+        with Image(blob=object_content.read()) as img:
+            img.format = 'png'
+            img.alpha_channel = 'remove'
+            img.background_color = Color('white')
+            img.thumbnail(width,height)
+            #print("2save")
+            img.save(filename=target_fname)
+            print("2saveComplete")
+        return target_fname
+    except Exception as e1:
+        print("2save: ",str(e1))
         tmpfile= "{0}/file.try".format(tempfile.gettempdir())
+        object_content=genS3Objct(bucket,key)
         with open(tmpfile,'wb') as f:
             f.write(object_content.read())
         with Image(filename="{0}[0]".format(tmpfile)) as img:
@@ -25,9 +42,10 @@ def imageThumbnail(bucket,key,target_fname,width=100,height=100,blob=True):
             img.background_color = Color('white')
             #img.transform(resize='320x240>')
             img.thumbnail(width,height)
-            print("3save")
+            #print("3save")
             img.save(filename=target_fname)
             print("3saveComplete")
+        return target_fname
     return target_fname
 
 def genHash(key,split=7):
@@ -57,9 +75,10 @@ def generateObjectThumbnail(bucket,key,width=100,height=100,target_base='/static
         imageThumbnail(bucket,key,thumb_filename,width,height)
         #except:
         #    imageThumbnail(object_content,thumb_filename,width,height,blob=False)
-        object_content=None
+        #object_content=None
         result={"key":key,"thumbnail":thumb_filename}
     except Exception as e:
+        print("3save: ",str(e))
         thumb_filename=os.path.join(target_base,hashpath,"thumbnail.png")
         #src_default=os.path.join(pathlib.Path().resolve(),"thumbnailq/tasks","files/default-thumbnail.png")
         src_default=os.path.join(pathlib.Path(__file__).parent.resolve(),"files/default-thumbnail.png")
