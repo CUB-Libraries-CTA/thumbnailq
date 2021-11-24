@@ -9,37 +9,25 @@ from PIL import Image as IG
 def imageThumbnail(bucket,key,target_fname,width=100,height=100,blob=True):
     try:
         object_content=genS3Objct(bucket,key)
+        IG.MAX_IMAGE_PIXELS = None
         with IG.open(object_content) as img:
             img.thumbnail((width,height))
             print("1save")
             img.save(target_fname)
             print("1saveComplete")
     except:
-        try:
-            object_content=genS3Objct(bucket,key)
-            with Image(blob=object_content.read()) as img:
-                img.format = 'png'
-                img.alpha_channel = 'remove'
-                img.background_color = Color('white')
-                img.thumbnail(width,height)
-                print("2save")
-                img.save(filename=target_fname)
-                print("2saveComplete")
-                
-
-        except:
-            tmpfile= "{0}/file.try".format(tempfile.gettempdir())
-            with open(tmpfile,'wb') as f:
-                f.write(object_content.read())
-            with Image(filename="{0}[0]".format(tmpfile)) as img:
-                img.format = 'png'
-                img.alpha_channel = 'remove'
-                img.background_color = Color('white')
-                #img.transform(resize='320x240>')
-                img.thumbnail(width,height)
-                print("3save")
-                img.save(filename=target_fname)
-                print("3saveComplete")
+        tmpfile= "{0}/file.try".format(tempfile.gettempdir())
+        with open(tmpfile,'wb') as f:
+            f.write(object_content.read())
+        with Image(filename="{0}[0]".format(tmpfile)) as img:
+            img.format = 'png'
+            img.alpha_channel = 'remove'
+            img.background_color = Color('white')
+            #img.transform(resize='320x240>')
+            img.thumbnail(width,height)
+            print("3save")
+            img.save(filename=target_fname)
+            print("3saveComplete")
     return target_fname
 
 def genHash(key,split=7):
