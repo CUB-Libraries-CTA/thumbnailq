@@ -11,8 +11,9 @@ def imageThumbnail(bucket,key,target_fname,width=100,height=100,blob=True):
         object_content=genS3Objct(bucket,key)
         IG.MAX_IMAGE_PIXELS = None
         with IG.open(object_content) as img:
-            img.thumbnail((width,height))
             img.convert('RGBA')
+            img.thumbnail((width,height))
+            #img.convert('RGBA')
             #print("1save")
             img.save(target_fname)
             print("1saveComplete")
