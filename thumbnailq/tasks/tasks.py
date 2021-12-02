@@ -7,7 +7,11 @@ import hashlib, textwrap, boto3, os,pathlib,tempfile
 from PIL import Image as IG
 
 def imageThumbnail(bucket,key,target_fname,width=100,height=100,blob=True):
-    if key[-4:].lower() in ['.webm', '.mkv', '.flv', '.vob', '.ogv', '.ogg', '.rrc', '.gifv', '.mng', '.mov', '.avi', '.qt', '.wmv', '.yuv', '.rm', '.asf', '.amv', '.mp4', '.m4p', '.m4v', '.mpg', '.mp2', '.mpeg', '.mpe', '.mpv', '.m4v', '.svi', '.3gp', '.3g2', '.mxf', '.roq', '.nsv', '.flv', '.f4v', '.f4p', '.f4a', '.f4b']:
+    if key.endswith('Thumbs.db') or key.endswith('.DS_Store'):
+        deleteObject(bucket,key)
+        if os.path.exists(target_fname):
+            os.remove(target_fname)
+    elif key[-4:].lower() in ['.webm', '.mkv', '.flv', '.vob', '.ogv', '.ogg', '.rrc', '.gifv', '.mng', '.mov', '.avi', '.qt', '.wmv', '.yuv', '.rm', '.asf', '.amv', '.mp4', '.m4p', '.m4v', '.mpg', '.mp2', '.mpeg', '.mpe', '.mpv', '.m4v', '.svi', '.3gp', '.3g2', '.mxf', '.roq', '.nsv', '.flv', '.f4v', '.f4p', '.f4a', '.f4b']:
         src_default=os.path.join(pathlib.Path(__file__).parent.resolve(),"files/video.png")
         copyfile(src_default,target_fname)
         return target_fname
@@ -49,6 +53,11 @@ def genHash(key,split=7):
     r=hashlib.md5(key.encode())
     hashpath="/".join(textwrap.wrap(r.hexdigest(),split))
     return hashpath
+
+def deleteObject(bucket,key):
+    client = boto3.client('s3')
+    client.delete_object(Bucket=bucket, Key=key)
+    return True
 
 def genS3Objct(bucket,key):
     s3_client = boto3.client('s3')
