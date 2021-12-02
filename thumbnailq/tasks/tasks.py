@@ -7,15 +7,23 @@ import hashlib, textwrap, boto3, os,pathlib,tempfile
 from PIL import Image as IG
 
 def imageThumbnail(bucket,key,target_fname,width=100,height=100,blob=True):
-    try:
-        object_content=genS3Objct(bucket,key)
-        IG.MAX_IMAGE_PIXELS = None
-        with IG.open(object_content) as img:
-            new_img=img.convert('RGB')
-            new_img.thumbnail((width,height))
-            new_img.save(target_fname)
+    if key[-4:].lower() in ['.webm', '.mkv', '.flv', '.vob', '.ogv', '.ogg', '.rrc', '.gifv', '.mng', '.mov', '.avi', '.qt', '.wmv', '.yuv', '.rm', '.asf', '.amv', '.mp4', '.m4p', '.m4v', '.mpg', '.mp2', '.mpeg', '.mpe', '.mpv', '.m4v', '.svi', '.3gp', '.3g2', '.mxf', '.roq', '.nsv', '.flv', '.f4v', '.f4p', '.f4a', '.f4b']:
+        src_default=os.path.join(pathlib.Path(__file__).parent.resolve(),"files/video.png")
+        copyfile(src_default,target_fname)
         return target_fname
-    except Exception as e:
+    elif key[-4:].lower() in ['.aac', '.aiff', '.ape', '.au', '.flac', '.gsm', '.it', '.m3u', '.m4a', '.mid', '.mod', '.mp3', '.mpa', '.pls', '.ra', '.s3m', '.sid', '.wav', '.wma', '.xm']:
+        src_default=os.path.join(pathlib.Path(__file__).parent.resolve(),"files/audio.png")
+        copyfile(src_default,target_fname)
+        return target_fname
+    elif key[-4:].lower() in ['.doc','.docx','.odt','.rft','.tex','.txt','.text','.wpd','.csv','.dat','.log','.mdb','.sql','.xml','.ods','.xls','.xlsx']:
+        src_default=os.path.join(pathlib.Path(__file__).parent.resolve(),"files/default-thumbnail.png")
+        copyfile(src_default,target_fname)
+        return target_fname
+    elif key[-4:].lower() in ['.tar','.zip','.pkg','.deb','.arj','.7z','.rar','.rpm','r.gz']:
+        src_default=os.path.join(pathlib.Path(__file__).parent.resolve(),"files/zip.png")
+        copyfile(src_default,target_fname)
+        return target_fname
+    elif key[-4:].lower() in ['.pdf']:
         #PDF attempt
         tmpfile= "{0}/file.try".format(tempfile.gettempdir())
         object_content=genS3Objct(bucket,key)
@@ -27,8 +35,15 @@ def imageThumbnail(bucket,key,target_fname,width=100,height=100,blob=True):
             img.background_color = Color('white')
             img.thumbnail(width,height)
             img.save(filename=target_fname)
-        pass
-    return target_fname
+        return target_fname
+    else:
+        object_content=genS3Objct(bucket,key)
+        IG.MAX_IMAGE_PIXELS = None
+        with IG.open(object_content) as img:
+            new_img=img.convert('RGB')
+            new_img.thumbnail((width,height))
+            new_img.save(target_fname)
+        return target_fname
 
 def genHash(key,split=7):
     r=hashlib.md5(key.encode())
