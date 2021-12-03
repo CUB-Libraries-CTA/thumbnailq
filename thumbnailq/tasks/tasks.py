@@ -81,6 +81,7 @@ def generateObjectThumbnail(bucket,key,width=100,height=100,force_exists=False,t
         imageThumbnail(bucket,key,thumb_filename,width,height,force_exists=force_exists)
         result={"key":key,"thumbnail":thumb_filename}
     except Exception as e:
+        print(str(e))
         thumb_filename=os.path.join(target_base,hashpath,"thumbnail.png")
         src_default=os.path.join(pathlib.Path(__file__).parent.resolve(),"files/default-thumbnail.png")
         pathlib.Path(os.path.join(target_base,hashpath)).mkdir(parents=True, exist_ok=True)
