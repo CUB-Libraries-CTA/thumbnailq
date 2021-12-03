@@ -28,7 +28,7 @@ def imageThumbnail(bucket,key,target_fname,width=100,height=100,force_exists=Fal
         src_default=os.path.join(pathlib.Path(__file__).parent.resolve(),"files/zip.png")
         copyfile(src_default,target_fname)
         return target_fname
-    elif force_exists==False and Path(target_fname).is_file():
+    elif force_exists==False and pathlib.Path(target_fname).is_file():
         return target_fname
     elif key[-4:].lower() in ['.pdf']:
         #PDF attempt
