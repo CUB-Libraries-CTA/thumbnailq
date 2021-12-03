@@ -6,7 +6,8 @@ from shutil import copyfile
 import hashlib, textwrap, boto3, os,pathlib,tempfile
 from PIL import Image as IG
 
-def imageThumbnail(bucket,key,target_fname,width=100,height=100,blob=True):
+def imageThumbnail(bucket,key,target_fname,width=100,height=100,force_exists=False):
+    
     if key.endswith('Thumbs.db') or key.endswith('.DS_Store'):
         deleteObject(bucket,key)
         if os.path.exists(target_fname):
@@ -26,6 +27,8 @@ def imageThumbnail(bucket,key,target_fname,width=100,height=100,blob=True):
     elif key[-4:].lower() in ['.tar','.zip','.pkg','.deb','.arj','.7z','.rar','.rpm','r.gz']:
         src_default=os.path.join(pathlib.Path(__file__).parent.resolve(),"files/zip.png")
         copyfile(src_default,target_fname)
+        return target_fname
+    elif force_exists==False and Path(target_fname).is_file():
         return target_fname
     elif key[-4:].lower() in ['.pdf']:
         #PDF attempt
@@ -65,7 +68,7 @@ def genS3Objct(bucket,key):
     return s3_response_object['Body']
 
 @task()
-def generateObjectThumbnail(bucket,key,width=100,height=100,target_base='/static_secure/thumbnails'):
+def generateObjectThumbnail(bucket,key,width=100,height=100,force_exists=False,target_base='/static_secure/thumbnails'):
     """
     Taskname: generateObjectThumbnail
     args/kwargs:bucket,width=100,height=100,target_base='/static_secure/thumbnails'
@@ -75,7 +78,7 @@ def generateObjectThumbnail(bucket,key,width=100,height=100,target_base='/static
         hashpath=genHash(hashkey)
         thumb_filename=os.path.join(target_base,hashpath,"thumbnail.png")
         pathlib.Path(os.path.join(target_base,hashpath)).mkdir(parents=True, exist_ok=True)
-        imageThumbnail(bucket,key,thumb_filename,width,height)
+        imageThumbnail(bucket,key,thumb_filename,width,height,force_exists=force_exists)
         result={"key":key,"thumbnail":thumb_filename}
     except Exception as e:
         thumb_filename=os.path.join(target_base,hashpath,"thumbnail.png")
@@ -87,7 +90,7 @@ def generateObjectThumbnail(bucket,key,width=100,height=100,target_base='/static
     return result
 
 @task()
-def generateBucketThumbnail(bucket,width=100,height=100,target_base='/static_secure/thumbnails'):
+def generateBucketThumbnail(bucket,width=100,height=100,force_exists=False,target_base='/static_secure/thumbnails'):
     """
     Taskname: generateBucketThumbnail
     args/kwargs:bucket,width=100,height=100,target_base='/static_secure/thumbnails'
@@ -96,5 +99,5 @@ def generateBucketThumbnail(bucket,width=100,height=100,target_base='/static_sec
     my_bucket = s3.Bucket(bucket)
     result=[]
     for my_bucket_object in my_bucket.objects.all():
-        result.append(generateObjectThumbnail(my_bucket_object.bucket_name,my_bucket_object.key,width,height,target_base))
+        result.append(generateObjectThumbnail(my_bucket_object.bucket_name,my_bucket_object.key,width=width,height=height,target_base=target_base,force_exists=force_exists))
     return result
