@@ -31,26 +31,52 @@ def imageThumbnail(bucket,key,target_fname,width=100,height=100,force_exists=Fal
     elif force_exists==False and pathlib.Path(target_fname).is_file():
         return target_fname
     elif key[-4:].lower() in ['.pdf']:
-        #PDF attempt
-        tmpfile= "{0}/file.try".format(tempfile.gettempdir())
-        object_content=genS3Objct(bucket,key)
-        with open(tmpfile,'wb') as f:
-            f.write(object_content.read())
-        with Image(filename="{0}[0]".format(tmpfile)) as img:
-            img.format = 'png'
-            img.alpha_channel = 'remove'
-            img.background_color = Color('white')
-            img.thumbnail(width,height)
-            img.save(filename=target_fname)
-        return target_fname
+        try:
+            tmpfile= "{0}/{1}".format(tempfile.gettempdir(),next(tempfile._get_candidate_names()))
+            object_content=genS3Objct(bucket,key)
+            with open(tmpfile,'wb') as f:
+                f.write(object_content.read())
+            with Image(filename="{0}[0]".format(tmpfile)) as img:
+                img.format = 'png'
+                img.alpha_channel = 'remove'
+                img.background_color = Color('white')
+                img.thumbnail(width,height)
+                img.save(filename=target_fname)
+            return target_fname
+        finally:
+            if os.path.exists(tmpfile):
+                print('delete: ',tmpfile)
+                os.remove(tmpfile)
     else:
-        object_content=genS3Objct(bucket,key)
-        IG.MAX_IMAGE_PIXELS = None
-        with IG.open(object_content) as img:
-            new_img=img.convert('RGB')
-            new_img.thumbnail((width,height))
-            new_img.save(target_fname)
-        return target_fname
+        try:
+            object_content=genS3Objct(bucket,key)
+            IG.MAX_IMAGE_PIXELS = None
+            with IG.open(object_content) as img:
+                new_img=img.convert('RGB')
+                new_img.thumbnail((width,height))
+                new_img.save(target_fname)
+            print('worked')
+            return target_fname
+        except Exception as e:
+            try:
+                tmpfile= "{0}/{1}".format(tempfile.gettempdir(),next(tempfile._get_candidate_names()))
+                object_content=genS3Objct(bucket,key)
+                with open(tmpfile,'wb') as f:
+                    f.write(object_content.read())
+                with Image(filename="{0}[0]".format(tmpfile)) as img:
+                    img.format = 'png'
+                    img.alpha_channel = 'remove'
+                    img.background_color = Color('white')
+                    img.thumbnail(width,height)
+                    img.save(filename=target_fname)
+                print('Error')
+                return target_fname
+            finally:
+                if os.path.exists(tmpfile):
+                    print('delete: ',tmpfile)
+                    os.remove(tmpfile)
+                
+
 
 def genHash(key,split=7):
     r=hashlib.md5(key.encode())
