@@ -59,11 +59,11 @@ def imageThumbnail(bucket,key,target_fname,width=100,height=100,force_exists=Fal
             return target_fname
         except Exception as e:
             try:
-                tmpfile= "{0}/{1}".format(tempfile.gettempdir(),next(tempfile._get_candidate_names()))
+                #tmpfile= "{0}/{1}".format(tempfile.gettempdir(),next(tempfile._get_candidate_names()))
                 object_content=genS3Objct(bucket,key)
-                with open(tmpfile,'wb') as f:
-                    f.write(object_content.read())
-                with Image(filename="{0}[0]".format(tmpfile)) as img:
+                # with open(tmpfile,'wb') as f:
+                #     f.write(object_content.read())
+                with Image(blob=object_content.read()) as img:
                     img.format = 'png'
                     img.alpha_channel = 'remove'
                     img.background_color = Color('white')
@@ -71,10 +71,10 @@ def imageThumbnail(bucket,key,target_fname,width=100,height=100,force_exists=Fal
                     img.save(filename=target_fname)
                 print('Error')
                 return target_fname
-            finally:
-                if os.path.exists(tmpfile):
-                    print('delete: ',tmpfile)
-                    os.remove(tmpfile)
+            # finally:
+            #     if os.path.exists(tmpfile):
+            #         print('delete: ',tmpfile)
+            #         os.remove(tmpfile)
                 
 
 
