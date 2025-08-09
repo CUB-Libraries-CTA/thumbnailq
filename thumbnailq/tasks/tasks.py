@@ -1,10 +1,15 @@
-from celery.task import task
+#from celery.task import task
+from celery import Celery
+import celeryconfig
 from wand.image import Image
 from wand.color import Color
 from boto3 import client
 from shutil import copyfile
 import hashlib, textwrap, boto3, os,pathlib,tempfile
 from PIL import Image as IG
+
+app = Celery()
+app.config_from_object(celeryconfig)
 
 def imageThumbnail(bucket,key,target_fname,width=100,height=100,force_exists=False):
     
@@ -93,7 +98,8 @@ def genS3Objct(bucket,key):
     s3_response_object = s3_client.get_object(Bucket=bucket, Key=key)
     return s3_response_object['Body']
 
-@task()
+#@task()
+@app.task()
 def generateObjectThumbnail(bucket,key,width=100,height=100,force_exists=False,target_base='/static_secure/thumbnails'):
     """
     Taskname: generateObjectThumbnail
@@ -116,7 +122,8 @@ def generateObjectThumbnail(bucket,key,width=100,height=100,force_exists=False,t
         pass
     return result
 
-@task()
+#@task()
+@app.task()
 def generateBucketThumbnail(bucket,width=100,height=100,force_exists=False,target_base='/static_secure/thumbnails'):
     """
     Taskname: generateBucketThumbnail
