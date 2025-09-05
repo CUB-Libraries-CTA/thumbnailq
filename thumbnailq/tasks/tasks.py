@@ -1,4 +1,3 @@
-#from celery.task import task
 from celery import Celery
 import celeryconfig
 from wand.image import Image
@@ -98,7 +97,6 @@ def genS3Objct(bucket,key):
     s3_response_object = s3_client.get_object(Bucket=bucket, Key=key)
     return s3_response_object['Body']
 
-#@task()
 @app.task()
 def generateObjectThumbnail(bucket,key,width=100,height=100,force_exists=False,target_base='/static_secure/thumbnails'):
     """
